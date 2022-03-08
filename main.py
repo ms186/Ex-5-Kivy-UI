@@ -2,11 +2,15 @@ import os
 
 #os.environ['DISPLAY'] = ":0.0"
 #os.environ['KIVY_WINDOW'] = 'egl_rpi'
-
+from kivy.properties import ObjectProperty
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.animation import Animation
+from kivy.uix.widget import Widget
+from threading import Thread
+from time import sleep
 
 from pidev.MixPanel import MixPanel
 from pidev.kivy.PassCodeScreen import PassCodeScreen
@@ -16,6 +20,8 @@ from pidev.kivy import ImageButton
 from pidev.kivy.selfupdatinglabel import SelfUpdatingLabel
 
 from datetime import datetime
+from pidev.Joystick import Joystick
+joy = Joystick(0, False)
 
 time = datetime
 
@@ -25,6 +31,9 @@ MIXPANEL = MixPanel("Project Name", MIXPANEL_TOKEN)
 SCREEN_MANAGER = ScreenManager()
 MAIN_SCREEN_NAME = 'main'
 ADMIN_SCREEN_NAME = 'admin'
+
+counter_button = ObjectProperty(None)
+
 
 
 class ProjectNameGUI(App):
@@ -43,17 +52,81 @@ class ProjectNameGUI(App):
 Window.clearcolor = (1, 1, 1, 1)  # White
 
 
+
 class MainScreen(Screen):
+    twice_signal = ObjectProperty(None)
+    count = 0
+    mike = 0
+
     """
     Class to handle the main screen and its associated touch events
     """
+
+    def joy_update(self):  # This should be inside the MainScreen Class
+        while True:
+            self.your_mom.text = str(joy.get_button_state(0))
+            sleep(.1)
+            text = self.your_mom.text
+            self.hello_world.text = str(joy.button_combo_check([2,3]))
+            self.x_axis_button.text = str(joy.get_axis("x"))
+            self.y_axis_button.text = str(joy.get_axis("y"))
+
+    def button_combo_check(self):
+        if joy.button_combo_check([2, 3]):
+            self.your_mom.texts= "1"
+            self.refresh
+
+
+    def start_joy_thread(self):
+        Thread(target=self.joy_update,daemon=True).start()
+
+
+
+
 
     def pressed(self):
         """
         Function called on button touch event for button with id: testButton
         :return: None
         """
-        print("Callback from MainScreen.pressed()")
+        print("Call Back")
+
+    def btn(self):
+        self.count += 1
+        self.counter_button.text = str(self.count)
+
+
+    def twice(self):
+        if self.twice_signal.text == "sus":
+            self.twice_signal.text = "hello"
+        else:
+
+            self.twice_signal.text = "sus"
+
+    def baka(self):
+        SCREEN_MANAGER.current = 'passCode'
+
+
+
+
+
+
+
+    def animate_it(self, widget):
+        self.mike += 1
+        self.mike_button = str(self.count)
+        if self.mike < 2:
+            anim = Animation(x=50) + Animation(size=(80, 80), duration=2.)
+            anim.start(widget)
+        else:
+            SCREEN_MANAGER.current = 'passCode'
+
+
+
+
+
+
+
 
     def admin_action(self):
         """
